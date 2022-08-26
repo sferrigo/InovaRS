@@ -1,0 +1,7 @@
+[
+    {
+        "variable": "ttn_payload_v3",
+        "value": "{\"end_device_ids\":{\"dev_eui\":\"00051680001156FC\",\"device_id\":\"eui-00051680001156fc\",\"application_ids\":{\"application_id\":\"sirros-teste-device\"},\"join_eui\":\"0101010101010101\",\"dev_addr\":\"00F9C7D8\"},\"uplink_message\":{\"frm_payload\":\"MDA0MjIxLjA5NC4wMDAwOTIxMDguODA5OTUwMDkwKzAwLjAwMDAwMCswMC4wMDAwMDA=\",\"f_port\":2,\"f_cnt\":2,\"session_key_id\":\"AYLMwvTQKXE49LBPT22agw==\",\"rx_metadata\":[{\"gateway_ids\":{\"gateway_id\":\"a84041205b2c4150\",\"eui\":\"A84041205B2C4150\"},\"timestamp\":2796821204,\"rssi\":-133,\"channel_rssi\":-133,\"snr\":-19.8,\"uplink_token\":\"Ch4KHAoQYTg0MDQxMjA1YjJjNDE1MBIIqEBBIFssQVAQ1LXQtQoaCwi8oZWYBhCasbc5IKCYo/yyiRg=\",\"channel_index\":1}],\"settings\":{\"data_rate\":{\"lora\":{\"bandwidth\":125000,\"spreading_factor\":12}},\"coding_rate\":\"4/5\",\"frequency\":\"915400000\",\"timestamp\":2796821204},\"received_at\":\"2022-08-23T22:12:12.121265187Z\",\"consumed_airtime\":\"2.793472s\",\"network_ids\":{\"net_id\":\"000000\"}},\"correlation_ids\":[\"as:up:01GB6C6QX6M15E4W1H4ZDQG38P\",\"gs:conn:01GB376AAT10JSMC33D8N4S7KM\",\"gs:up:host:01GB376AAZ1P95VSCSYX27F41A\",\"gs:uplink:01GB6C6QPR7CH8F24F368PAP74\",\"ns:uplink:01GB6C6QPSYEAT4JVE0KN6MBXM\",\"rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01GB6C6QPSXZJKPVW9FY3ZKFQF\",\"rpc:/ttn.lorawan.v3.NsAs/HandleUplink:01GB6C6QX6RN3TWAHPS6M7PFC0\"],\"received_at\":\"2022-08-23T22:12:12.326442114Z\"}",
+        "group": "1661292732875"
+    }
+]
