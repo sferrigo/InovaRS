@@ -42,12 +42,12 @@ if (payload_raw) {
         variable: "temperature",
         //value: buffer.readInt16BE(1),
         //value: parseInt(buffer.readInt8(2)),
-        value: stringBuffer.substring(4,7),
+        value: stringBuffer.substring(4,8),
         unit: "°C",
       },
       { variable: "humidity", 
         //value: buffer.readUInt16BE(3), 
-        value: stringBuffer.substring(8,11),
+        value: stringBuffer.substring(8,12),
         unit: "%" 
       },
       { variable: "luminosity", 
@@ -55,7 +55,7 @@ if (payload_raw) {
         unit: "lux" 
       },
       { variable: "noise", 
-        value: stringBuffer.substring(17,21),
+        value: stringBuffer.substring(16,22),
         unit: "dB" 
       },
       { variable: "eco2", 
@@ -67,11 +67,11 @@ if (payload_raw) {
         unit: "ppb" 
       },
       { variable: "latitude", 
-        value: stringBuffer.substring(30,39),
+        value: stringBuffer.substring(30,40),
         unit: "º" 
       },
       { variable: "longitude", 
-        value: stringBuffer.substring(40,49),
+        value: stringBuffer.substring(40,50),
         unit: "º" 
       },
       { variable: "string", 
