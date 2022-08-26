@@ -1,0 +1,112 @@
+/* This is an a generic payload parser for LoRaWAN. It will work for any network server.
+ ** The code find the "payload" variable, sent by your sensor, and parse it if exists.
+ ** The content of payload variable is always an Hexadecimal value.
+ **
+ ** Note: Additional variables can be created by the Network Server and sent directly to the bucket. Normally they aren't handled here.
+ **
+ ** Testing:
+ ** You can do manual tests to the parse by using the Device Emulator. Copy and Paste the following JSON:
+ ** [{ "variable": "data", "value": "0109611395" }]
+ */
+
+// Search the payload variable in the payload global variable. It's contents is always [ { variable, value...}, {variable, value...} ...]
+
+const payload_raw = payload.find(
+  (x) =>
+    x.variable === "payload_raw" ||
+    x.variable === "payload" ||
+    x.variable === "data" 
+);
+
+//console.log(payload_raw.value);
+console.log(payload_raw);
+
+if (payload_raw) {
+  try {
+    // Convert the data from Hex to Javascript Buffer.
+    const buffer = Buffer.from(payload_raw.value, "hex");
+    
+    let stringBuffer = buffer.toString('utf8');
+
+    // Lets say you have a payload of 5 bytes.
+    // 0 - Protocol Version
+    // 1,2 - Temperature
+    // 3,4 - Humidity
+    // More information about buffers can be found here: https://nodejs.org/api/buffer.html
+    const data = [
+      { variable: "cont", 
+        value: stringBuffer.substring(0,4),
+        unit: "seq" 
+      },
+      {
+        variable: "temperature",
+        //value: buffer.readInt16BE(1),
+        //value: parseInt(buffer.readInt8(2)),
+        value: stringBuffer.substring(4,7),
+        unit: "°C",
+      },
+      { variable: "humidity", 
+        //value: buffer.readUInt16BE(3), 
+        value: stringBuffer.substring(8,11),
+        unit: "%" 
+      },
+      { variable: "luminosity", 
+        value: stringBuffer.substring(12,16),
+        unit: "lux" 
+      },
+      { variable: "noise", 
+        value: stringBuffer.substring(17,21),
+        unit: "dB" 
+      },
+      { variable: "eco2", 
+        value: stringBuffer.substring(22,25),
+        unit: "ppm" 
+      },
+      { variable: "etvoc", 
+        value: stringBuffer.substring(26,29),
+        unit: "ppb" 
+      },
+      { variable: "latitude", 
+        value: stringBuffer.substring(30,39),
+        unit: "º" 
+      },
+      { variable: "longitude", 
+        value: stringBuffer.substring(40,49),
+        unit: "º" 
+      },
+      { variable: "string", 
+        value: stringBuffer,
+        unit: "" },
+    ];
+
+    //console.log(buffer.readInt16BE(3));
+
+    // This will concat the content sent by your device with the content generated in this payload parser.
+    // It also add the field "group" and "time" to it, copying from your sensor data.
+    payload = payload.concat(
+      data.map((x) => ({
+        ...x,
+        group: String(payload_raw.serie || payload_raw.group),
+        //time: String(payload_raw.time),
+      }))
+    );
+  } catch (e) {
+    // Print the error to the Live Inspector.
+    console.error(e);
+
+    // Return the variable parse_error for debugging.
+    payload = [{ variable: "parse_error", value: e.message }];
+  }
+}
+
+
+
+//'use strict';
+
+//const valuesBase64 = payload.find(item => item.variable === 'frm_payload');
+//console.log(valuesBase64);
+//let buff = new Buffer(valuesBase64.value, 'base64');
+//let valuesHex = buff.toString('hex');
+
+//console.log(buff);
+
