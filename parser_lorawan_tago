@@ -42,36 +42,36 @@ if (payload_raw) {
         variable: "temperature",
         //value: buffer.readInt16BE(1),
         //value: parseInt(buffer.readInt8(2)),
-        value: stringBuffer.substring(4,8),
+        value: stringBuffer.substring(4,9),
         unit: "°C",
       },
       { variable: "humidity", 
         //value: buffer.readUInt16BE(3), 
-        value: stringBuffer.substring(8,12),
+        value: stringBuffer.substring(9,13),
         unit: "%" 
       },
       { variable: "luminosity", 
-        value: stringBuffer.substring(12,16),
+        value: stringBuffer.substring(13,18),
         unit: "lux" 
       },
       { variable: "noise", 
-        value: stringBuffer.substring(16,22),
+        value: stringBuffer.substring(18,23),
         unit: "dB" 
       },
       { variable: "eco2", 
-        value: stringBuffer.substring(22,25),
+        value: stringBuffer.substring(23,27),
         unit: "ppm" 
       },
       { variable: "etvoc", 
-        value: stringBuffer.substring(26,29),
+        value: stringBuffer.substring(27,31),
         unit: "ppb" 
       },
       { variable: "latitude", 
-        value: stringBuffer.substring(30,40),
+        value: stringBuffer.substring(31,40),
         unit: "º" 
       },
       { variable: "longitude", 
-        value: stringBuffer.substring(40,50),
+        value: stringBuffer.substring(40,49),
         unit: "º" 
       },
       { variable: "string", 
@@ -108,5 +108,24 @@ if (payload_raw) {
 //let buff = new Buffer(valuesBase64.value, 'base64');
 //let valuesHex = buff.toString('hex');
 
-//console.log(buff);
+//console.log(payload);
 
+//console.log(latitude);
+//console.log(longitude);
+
+const latitude = payload.find(data => data.variable === "latitude"); // change to your latitude variable 
+const longitude = payload.find(data => data.variable === "longitude"); // change to your longitude variable if (latitude && lo…
+//console.log(latitude);
+//console.log(longitude);
+
+payload.push
+
+/*if (latitude && longitude) {
+payload.push({
+variable: "location",
+location: { lat: Number(latitude.value), lng: Number(longitude.value) },
+value: ${latitude.value},${longitude.value},
+serie: latitude.serie,
+time: latitude.time
+})
+}*/
