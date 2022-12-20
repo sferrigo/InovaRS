@@ -1,7 +1,8 @@
 import sqlite3
-from flask import Flask, json, request
+from flask import Flask, json, request, render_template
+from datetime import datetime
 
-api = Flask(__name__)
+api = Flask(__name__, template_folder='.')
 
 def get_db_connection():
     conn = sqlite3.connect('ucs_amv_mqtt.db')
@@ -13,10 +14,22 @@ def print_messages():
   reply= {"result": "ok", "message": "success"}
   print("got post request: ", request.get_data())
   conn = get_db_connection();
-  conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.get_data()]);
+  #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.get_data()]);
+  data2 = str(datetime.now());
+  print(data2);
+  #conn.execute('INSERT INTO dados (dados, data) VALUES (?,?)', ([request.data.decode('UTF-8')], data2));
+  conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
   conn.commit();
   conn.close();
   return json.dumps(reply), 200
+
+@api.route('/list')
+def list():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("select * from dados")
+   rows = cur.fetchall(); 
+   return render_template("list.html",rows = rows)
 
 if __name__ == '__main__':
   api.run(host = '0.0.0.0', port=5000)
