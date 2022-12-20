@@ -12,13 +12,22 @@ def get_db_connection():
 @api.route('/', methods=['POST'])
 def print_messages():
   reply= {"result": "ok", "message": "success"}
-  print("got post request: ", request.get_data())
+  print("got post request: ", request.data.decode('UTF-8'));
+  arquivo = request.data.decode('UTF-8');
+  divisao = arquivo.split("|");
+  print(divisao);
   conn = get_db_connection();
   #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.get_data()]);
   data2 = str(datetime.now());
-  print(data2);
+  #print(data2);
   #conn.execute('INSERT INTO dados (dados, data) VALUES (?,?)', ([request.data.decode('UTF-8')], data2));
-  conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
+  #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
+  if arquivo.find("{") != -1:
+    query_insert = """INSERT INTO dados (dados, data, device) VALUES (?,?,?)""";
+    conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0]));
+  else:
+    query_insert = """INSERT INTO dados (dados, data, device, contagem, temperatura, umidade, luminosidade, ruido, etvoc, eco2, latitude, longitude, unixtime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""";
+    conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0], divisao[1], divisao[2], divisao[3], divisao[4], divisao[5], divisao[6], divisao[7], divisao[8], divisao[9], divisao[10]));
   conn.commit();
   conn.close();
   return json.dumps(reply), 200
@@ -27,8 +36,8 @@ def print_messages():
 def list():
    conn = get_db_connection();
    cur = conn.cursor()
-   cur.execute("select * from dados")
-   rows = cur.fetchall(); 
+   cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 200")
+   rows = cur.fetchall();
    return render_template("list.html",rows = rows)
 
 if __name__ == '__main__':
