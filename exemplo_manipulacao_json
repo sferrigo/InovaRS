@@ -1,0 +1,17 @@
+import json
+import pandas as pd
+dados = pd.read_json('{"device":"UCS_AMV-08","apmode":0,"mac":"58:BF:25:EB:FD:38","deveui":"00:12:F8:00:00:00:21:C0","appeui":"01:01:01:01:01:01:01:01","appkey":"04:ED:23:B3:70:E9:6F:10:9C:A6:7B:2B:88:22:47:08","sq":31,"ccid":"89550532520001470808","vsat":10,"usat":4,"gps_accuracy":5.7,"power_input":0.518681,"solar_input":12,"ts":1671787820,"firmware":"amv_0.39_sim808b","uptime":218014,"status":[{"error":"AIR_QUALITY_NOT_WORKING"}],"reset0":"SW_CPU_RESET","reset1":"SW_CPU_RESET"}')
+print("Quandidade: " + str(dados.shape))
+print("Colunas: " + dados.columns)
+print(dados['status'])
+print(dados['status'][0])
+#print(dados.to_json(orient='table'))
+#dados2 = {"device":"UCS_AMV-08","apmode":0,"mac":"58:BF:25:EB:FD:38","deveui":"00:12:F8:00:00:00:21:C0","appeui":"01:01:01:01:01:01:01:01","appkey":"04:ED:23:B3:70:E9:6F:10:9C:A6:7B:2B:88:22:47:08","sq":31,"ccid":"89550532520001470808","vsat":10,"usat":4,"gps_accuracy":5.7,"power_input":0.518681,"solar_input":12,"ts":1671787820,"firmware":"amv_0.39_sim808b","uptime":218014,"status":[{"error":"AIR_QUALITY_NOT_WORKING"}],"reset0":"SW_CPU_RESET","reset1":"SW_CPU_RESET"}
+dados3 = {"device":"UCS_AMV-16","apmode":0,"mac":"10:97:BD:CD:74:24","deveui":"","appeui":"01:01:01:01:01:01:01:01","appkey":"54:91:8A:8F:B0:BC:45:9B:CC:A8:C1:67:A8:55:FE:F3","sq":28,"ccid":"89550532520001479577","vsat":10,"usat":5,"gps_accuracy":2.4,"power_input":11.74798,"solar_input":12,"ts":1671787819,"firmware":"amv_0.35_sim808b","uptime":217987,"status":[{"error":"LORA_NOT_RESPONDING"},{"error":"DHT_NOT_RESPONDING"}],"reset0":"SW_CPU_RESET","reset1":"SW_CPU_RESET"}
+normalizados = pd.json_normalize(dados2)
+normalizados = pd.json_normalize(dados3, record_path=['status'], meta=['device'])
+print(normalizados)
+print(normalizados['error'])
+print(normalizados.iloc[[1]])
+print(normalizados['error'].iloc[[1]])
+print(type(normalizados))
