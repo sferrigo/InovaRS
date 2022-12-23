@@ -22,7 +22,7 @@ def print_messages():
   #print(data2);
   #conn.execute('INSERT INTO dados (dados, data) VALUES (?,?)', ([request.data.decode('UTF-8')], data2));
   #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
-  if arquivo.find("{") != -1:
+  if arquivo.find("|") != -1:
     query_insert = """INSERT INTO dados (dados, data, device) VALUES (?,?,?)""";
     conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0]));
   else:
