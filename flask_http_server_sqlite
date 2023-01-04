@@ -1,6 +1,9 @@
+import pandas as pd
 import sqlite3
-from flask import Flask, json, request, render_template
+from flask import Flask, json, request, render_template, Response
 from datetime import datetime
+import io
+import csv
 
 api = Flask(__name__, template_folder='.')
 
@@ -22,7 +25,7 @@ def print_messages():
   #print(data2);
   #conn.execute('INSERT INTO dados (dados, data) VALUES (?,?)', ([request.data.decode('UTF-8')], data2));
   #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
-  if arquivo.find("|") != -1:
+  if arquivo.find("{") != -1:
     query_insert = """INSERT INTO dados (dados, data, device) VALUES (?,?,?)""";
     conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0]));
   else:
@@ -31,7 +34,7 @@ def print_messages():
   conn.commit();
   conn.close();
   return json.dumps(reply), 200
-
+  
 @api.route('/list')
 def list():
    conn = get_db_connection();
@@ -39,6 +42,121 @@ def list():
    cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 200")
    rows = cur.fetchall();
    return render_template("list.html",rows = rows)
+
+@api.route('/list/download')
+def download_report_list():
+ try:
+  conn = get_db_connection();
+  cur = conn.cursor()
+  cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 30000")
+  rows = cur.fetchall();
+  output = io.StringIO()
+  writer = csv.writer(output)
+
+  line = ['id; data; device; contagem; temperatura; umidade; luminosidade; ruido; etvoc; eco2; latitude; longitude; unixtime; dados']
+  writer.writerow(line)
+
+  for row in rows:
+   line = [str(row['id']) + ';' + str(row['data']) + ';' + row['device'] + ';' + str(row['contagem']) + ';' + str(row['temperatura']) + ';' + str(row['umidade']) + ';' + str(row['luminosidade']) + ';' + str(row['ruido']) + ';' + str(row['etvoc']) + ';' + str(row['eco2']) + ';' + str(row['latitude']) + ';' + str(row['longitude']) + ';' + str(row['unixtime']) + ';' + str(row['dados'])]
+   writer.writerow(line)
+
+  output.seek(0)
+
+  return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=dados_geral.csv"})
+ except Exception as e:
+  print(e)
+ finally:
+  cur.close()
+  conn.close()
+
+@api.route('/mayron')
+def mayron():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%sirrosteste_UCS_AMV-03%'ORDER BY id DESC LIMIT 1000")
+   rows = cur.fetchall();
+   return render_template("list.html",rows = rows)
+
+@api.route('/mayron/download')
+def download_report():
+ try:
+  conn = get_db_connection();
+  cur = conn.cursor()
+  cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%sirrosteste_UCS_AMV-03%') AND dados NOT LIKE '%{%' ORDER BY id DESC")
+  rows = cur.fetchall();
+  output = io.StringIO()
+  writer = csv.writer(output)
+
+  line = ['id, data, device, contagem, temperatura, umidade, luminosidade, ruido, etvoc, eco2, latitude, longitude, unixtime, dados']
+  #line = ['dados, teste']
+  writer.writerow(line)
+
+  for row in rows:
+   line = [str(row['id']) + ',' + str(row['data']) + ',' + row['device'] + ',' + str(row['contagem']) + ',' + str(row['temperatura']) + ',' + str(row['umidade']) + ',' + str(row['luminosidade']) + ',' + str(row['ruido']) + ',' + str(row['etvoc']) + ',' + str(row['eco2']) + ',' + str(row['latitude']) + ',' + str(row['longitude']) + ',' + str(row['unixtime']) + ',' + str(row['dados'])]
+   #line = [str(row['dados']) + ',' + str(row['contagem'])]
+   writer.writerow(line)
+
+  output.seek(0)
+
+  return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=dados_mayron.csv"})
+ except Exception as e:
+  print(e)
+ finally:
+  cur.close()
+  conn.close()
+
+@api.route('/errors')
+def error():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%error%' ORDER BY device,id DESC LIMIT 500")
+   rows = cur.fetchall();
+   print(rows)
+   return render_template("list.html",rows = rows)
+
+@api.route('/reset')
+def reset():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%RESET%' ORDER BY device,id DESC LIMIT 500")
+   rows = cur.fetchall();
+   print(rows)
+   return render_template("list.html",rows = rows)
+
+
+@api.route('/test')
+def test():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%error%' ORDER BY device,id DESC LIMIT 2")
+   rows = cur.fetchall();
+   #print(rows)
+   for row in rows:
+    print("Laco")
+    print(row['dados'])
+    print( type(row['dados']))
+    divide = []
+    if row['dados'].find("|") != -1:
+        print("Entrei no if")
+        divide = row['dados'].split("|")
+        print ("Divide 0: " + divide[0])
+        #print (" ")
+        print ("Divide 1: " + divide[1])
+        print ("sai do if")
+    else:
+        print("entrei no else")
+        #divide[1] = divide[0]
+        #divide[0] = "Nada"
+        divide.append("Nada")
+        print ("Divide 0 else: " + divide[0])
+        print ("Divide 1 else: " + divide[1])
+        print ("sai do else ")
+    print(row)
+    print(divide)
+   rows = divide
+   conn.close()
+   return render_template("list2.html", rows = divide)
+
 
 if __name__ == '__main__':
   api.run(host = '0.0.0.0', port=5000)
