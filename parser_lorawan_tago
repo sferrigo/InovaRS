@@ -18,6 +18,7 @@ const payload_raw = payload.find(
     x.variable === "data" 
 );
 
+const minus = '-';
 //console.log(payload_raw.value);
 console.log(payload_raw);
 
@@ -67,11 +68,11 @@ if (payload_raw) {
         unit: "ppb" 
       },
       { variable: "latitude", 
-        value: stringBuffer.substring(31,40),
+        value: minus.concat(stringBuffer.substring(31,40)),
         unit: "º" 
       },
       { variable: "longitude", 
-        value: stringBuffer.substring(40,49),
+        value: minus.concat(stringBuffer.substring(40,49)),
         unit: "º" 
       },
       { variable: "string", 
@@ -110,22 +111,25 @@ if (payload_raw) {
 
 //console.log(payload);
 
-//console.log(latitude);
 //console.log(longitude);
 
 const latitude = payload.find(data => data.variable === "latitude"); // change to your latitude variable 
 const longitude = payload.find(data => data.variable === "longitude"); // change to your longitude variable if (latitude && lo…
+//const latitude = -Math.abs(latitudeI * -1)
+console.log(latitude);
+console.log(longitude);
+//const menos = '-';
+//latitude = -Math.abs(latitude)
 //console.log(latitude);
-//console.log(longitude);
 
 payload.push
 
-/*if (latitude && longitude) {
+if (latitude && longitude) {
 payload.push({
 variable: "location",
 location: { lat: Number(latitude.value), lng: Number(longitude.value) },
-value: ${latitude.value},${longitude.value},
-serie: latitude.serie,
-time: latitude.time
+//value: ${latitude.value},${longitude.value},
+//serie: latitude.serie,
+//time: latitude.time
 })
-}*/
+}
