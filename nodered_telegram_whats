@@ -1,0 +1,538 @@
+[
+    {
+        "id": "87158aa2.470b68",
+        "type": "tab",
+        "label": "***GW_alertarFalha",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "8a45d10b.c4c18",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "Gateway Management",
+        "info": "",
+        "x": 540,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "8739a6de.01f408",
+        "type": "http request",
+        "z": "87158aa2.470b68",
+        "name": "request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 560,
+        "y": 200,
+        "wires": [
+            [
+                "edc4b93e.208918"
+            ]
+        ]
+    },
+    {
+        "id": "90ae30e8.ce354",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "build url",
+        "field": "url",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "https://mapper.packetbroker.net/api/v2/gateways/netID=000013,tenantID=ucs,id={{id}}",
+        "output": "str",
+        "x": 400,
+        "y": 200,
+        "wires": [
+            [
+                "8739a6de.01f408"
+            ]
+        ]
+    },
+    {
+        "id": "5a4a30.9b5595d",
+        "type": "function",
+        "z": "87158aa2.470b68",
+        "name": "status",
+        "func": "var status;\nvar eui;\n//Caso responseURL for recebida corretamente\nif (200 == msg.statusCode) {\n    if (!(\"error\" in msg.payload)) {\n        var last = (new Date(msg.payload.updatedAt)).getTime() / 1000;\n        var now = new Date();\n        var current = (now.getTime() + (now.getTimezoneOffset() * 60)) / 1000;        \n        var time_lapse = current - last;\n        msg.last = last;\n        msg.current = current;\n        msg.time_lapse = (parseFloat(time_lapse/60).toPrecision(3));\n        status = (msg.payload.online == true)? 'online': 'offline';\n    }\n}\nmsg.eui = msg.payload.eui;\nmsg.status = status;\nmsg.payload = \":::\" + status + \"::: \" + msg.time_lapse + \" min \"\n+ \"(rxRate \" + msg.payload.rxRate +\"; txRate \" + msg.payload.txRate + \")\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 200,
+        "wires": [
+            [
+                "f23632c5.91cac",
+                "b80c2446.9ebe98"
+            ]
+        ]
+    },
+    {
+        "id": "f23632c5.91cac",
+        "type": "rbe",
+        "z": "87158aa2.470b68",
+        "name": "has_changed",
+        "func": "rbei",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "status",
+        "topi": "id",
+        "x": 480,
+        "y": 300,
+        "wires": [
+            [
+                "614204d3.dff28c"
+            ]
+        ]
+    },
+    {
+        "id": "614204d3.dff28c",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "message template",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{owner}}: o status do gateway [{{ id }}] ({{ eui }}) foi alterado para {{ payload }}.",
+        "output": "str",
+        "x": 730,
+        "y": 300,
+        "wires": [
+            [
+                "f5ac112b.5c6f2",
+                "328cad0a.8b7f82"
+            ]
+        ]
+    },
+    {
+        "id": "9662f0b0.0c23",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "PMCS",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eu-f8033202fdbb0000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "PMCS",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eu-f8033202fdbb0000",
+        "payloadType": "str",
+        "x": 160,
+        "y": 200,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "f5ac112b.5c6f2",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "telegram payload",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{\n    \"chatId\": 1263314778,\n    \"type\": \"message\",\n    \"content\": \"{{payload}}\"\n}\n\n",
+        "output": "json",
+        "x": 470,
+        "y": 400,
+        "wires": [
+            [
+                "f1a53c358176981a",
+                "ec83e7c46543b6ab"
+            ]
+        ]
+    },
+    {
+        "id": "328cad0a.8b7f82",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "edc4b93e.208918",
+        "type": "json",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 710,
+        "y": 200,
+        "wires": [
+            [
+                "5a4a30.9b5595d"
+            ]
+        ]
+    },
+    {
+        "id": "b80c2446.9ebe98",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "6c7c54eff2699529",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "c42a23a37bfcb05b",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "TESTE",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Olá ... está sendo realizado um teste manual para checar a aplicação. Por favor, desconsidere!",
+        "payloadType": "str",
+        "x": 440,
+        "y": 500,
+        "wires": [
+            [
+                "f5ac112b.5c6f2"
+            ]
+        ]
+    },
+    {
+        "id": "6ed4f097297fc028",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "1facbbdd1a9c49e2",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "1 min (Local)",
+        "info": "",
+        "x": 90,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "4dc08d5e4b814d75",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "30 min (Arredores)",
+        "info": "",
+        "x": 110,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "4c4d129168551306",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "10 min (Caxias do Sul)",
+        "info": "",
+        "x": 160,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "f1a53c358176981a",
+        "type": "telegram sender",
+        "z": "87158aa2.470b68",
+        "name": "Samuel Ferrigo",
+        "bot": "28188d6963536d17",
+        "haserroroutput": true,
+        "outputs": 2,
+        "x": 720,
+        "y": 400,
+        "wires": [
+            [
+                "6c7c54eff2699529"
+            ],
+            [
+                "6ed4f097297fc028"
+            ]
+        ]
+    },
+    {
+        "id": "8a28f821bfa4c5a9",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "SAMAE",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f7d20000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "SAMAE",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f7d20000",
+        "payloadType": "str",
+        "x": 160,
+        "y": 260,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "c09ce3dd4f44dd78",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "UCS",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb80000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "UCS",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb80000",
+        "payloadType": "str",
+        "x": 150,
+        "y": 320,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "415859f780836c73",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Samuel",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-246f28fffe96ce30",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Samuel",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-246f28fffe96ce30",
+        "payloadType": "str",
+        "x": 160,
+        "y": 380,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "10eb90a7714e6c48",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Reserva",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb70000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Reserva",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb70000",
+        "payloadType": "str",
+        "x": 160,
+        "y": 440,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "ec83e7c46543b6ab",
+        "type": "node-red-contrib-whatsapp-cmb-send-message",
+        "z": "87158aa2.470b68",
+        "name": "Samuel",
+        "account": "466e8637e38cfdd6",
+        "text": "payload",
+        "inputtypemessage": "msg",
+        "rejectssl": false,
+        "x": 700,
+        "y": 480,
+        "wires": [
+            [
+                "5a9f352c82d1ef27"
+            ]
+        ]
+    },
+    {
+        "id": "5a9f352c82d1ef27",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "28188d6963536d17",
+        "type": "telegram bot",
+        "botname": "gwinova_bot",
+        "usernames": "",
+        "chatids": "1234",
+        "baseapiurl": "",
+        "updatemode": "polling",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "466e8637e38cfdd6",
+        "type": "node-red-contrib-whatsapp-cmb-account",
+        "name": "Samuel"
+    }
+]
