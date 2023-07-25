@@ -1,0 +1,208 @@
+[
+    {
+        "id": "f219f6ebcf45fbbb",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c0924b3fc1a9a56c",
+        "type": "mqtt out",
+        "z": "f219f6ebcf45fbbb",
+        "name": "",
+        "topic": "/dev/sirrosteste/UCS_AMV-17/cmd",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "b999e854c2c5c198",
+        "x": 460,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "6834dd7bb528d598",
+        "type": "inject",
+        "z": "f219f6ebcf45fbbb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "get.id()",
+        "payloadType": "str",
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "c0924b3fc1a9a56c"
+            ]
+        ]
+    },
+    {
+        "id": "7acb1aca3e4d4d4b",
+        "type": "inject",
+        "z": "f219f6ebcf45fbbb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "get.config()",
+        "payloadType": "str",
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "c0924b3fc1a9a56c"
+            ]
+        ]
+    },
+    {
+        "id": "a87059e51324551e",
+        "type": "mqtt in",
+        "z": "f219f6ebcf45fbbb",
+        "name": "",
+        "topic": "/dev/sirrosteste/UCS_AMV-17/data",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "b999e854c2c5c198",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 200,
+        "y": 240,
+        "wires": [
+            [
+                "bf92df4819139194"
+            ]
+        ]
+    },
+    {
+        "id": "bf92df4819139194",
+        "type": "split",
+        "z": "f219f6ebcf45fbbb",
+        "name": "split",
+        "splt": "|",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 450,
+        "y": 240,
+        "wires": [
+            [
+                "27d450f0b941e6af"
+            ]
+        ]
+    },
+    {
+        "id": "27d450f0b941e6af",
+        "type": "file",
+        "z": "f219f6ebcf45fbbb",
+        "name": "Parser",
+        "filename": "/home/samuel/dados.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 710,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "efa7612268cdaa80",
+        "type": "mqtt in",
+        "z": "f219f6ebcf45fbbb",
+        "name": "",
+        "topic": "/dev/sirrosteste/UCS_AMV-17/log",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "b999e854c2c5c198",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 320,
+        "wires": [
+            [
+                "78738d4144553138"
+            ]
+        ]
+    },
+    {
+        "id": "78738d4144553138",
+        "type": "file",
+        "z": "f219f6ebcf45fbbb",
+        "name": "armazena",
+        "filename": "/home/samuel/dados.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 700,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b999e854c2c5c198",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "oci-sambass.ddns.net",
+        "port": "21883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
