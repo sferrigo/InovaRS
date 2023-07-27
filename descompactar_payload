@@ -1,0 +1,9 @@
+//Segue um exemplo para descompactar o payload:
+const buff = Buffer.from(msg.payload.data, 'base64');
+const tst = Number(buff[0] << 24 | buff[1] << 16 | buff[2] << 8 | buff[3]);
+const lat = Number(buff[4] << 24 | buff[5] << 16 | buff[6] << 8 | buff[7]) / 10000000;
+const lon = Number(buff[8] << 24 | buff[9] << 16 | buff[10] << 8 | buff[11]) / 10000000;
+const head = Number(buff[12] << 8 | buff[13]);
+const speed = Number(buff[14]);
+//pego cada Byte na posicao especifica do payload e remonto em um int32, ou 16 como no caso do head e int8 no caso do speed
+//lat e lon ta /10000000 pois multiplico por 10000000 na hora de omtar o pacote (tetirar o ponto decimal)
