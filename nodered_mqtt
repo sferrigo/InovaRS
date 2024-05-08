@@ -1,11 +1,82 @@
 [
     {
-        "id": "f219f6ebcf45fbbb",
+        "id": "6ee8e1653f8a6f6b",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Fluxo 1",
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "f219f6ebcf45fbbb",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "87158aa2.470b68",
+        "type": "tab",
+        "label": "***GW_alertarFalha",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "b999e854c2c5c198",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "oci-sambass.ddns.net",
+        "port": "21883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "28188d6963536d17",
+        "type": "telegram bot",
+        "botname": "gwinova_bot",
+        "usernames": "",
+        "chatids": "1234",
+        "baseapiurl": "",
+        "updatemode": "polling",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "466e8637e38cfdd6",
+        "type": "node-red-contrib-whatsapp-cmb-account",
+        "name": "Samuel"
     },
     {
         "id": "c0924b3fc1a9a56c",
@@ -118,25 +189,6 @@
         "x": 450,
         "y": 240,
         "wires": [
-            [
-                "27d450f0b941e6af"
-            ]
-        ]
-    },
-    {
-        "id": "27d450f0b941e6af",
-        "type": "file",
-        "z": "f219f6ebcf45fbbb",
-        "name": "Parser",
-        "filename": "/home/samuel/dados.txt",
-        "filenameType": "str",
-        "appendNewline": true,
-        "createDir": true,
-        "overwriteFile": "false",
-        "encoding": "utf8",
-        "x": 710,
-        "y": 240,
-        "wires": [
             []
         ]
     },
@@ -179,30 +231,840 @@
         ]
     },
     {
-        "id": "b999e854c2c5c198",
-        "type": "mqtt-broker",
+        "id": "8a45d10b.c4c18",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "Gateway Management",
+        "info": "",
+        "x": 540,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "8739a6de.01f408",
+        "type": "http request",
+        "z": "87158aa2.470b68",
+        "name": "request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 780,
+        "y": 220,
+        "wires": [
+            [
+                "edc4b93e.208918"
+            ]
+        ]
+    },
+    {
+        "id": "90ae30e8.ce354",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "build url",
+        "field": "url",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "https://mapper.packetbroker.net/api/v2/gateways/netID=000013,tenantID=ucs,id={{id}}",
+        "output": "str",
+        "x": 620,
+        "y": 220,
+        "wires": [
+            [
+                "8739a6de.01f408"
+            ]
+        ]
+    },
+    {
+        "id": "5a4a30.9b5595d",
+        "type": "function",
+        "z": "87158aa2.470b68",
+        "name": "status",
+        "func": "var status;\nvar eui;\n//Caso responseURL for recebida corretamente\nif (200 == msg.statusCode) {\n    if (!(\"error\" in msg.payload)) {\n        var last = (new Date(msg.payload.updatedAt)).getTime() / 1000;\n        var now = new Date();\n        var current = (now.getTime() + (now.getTimezoneOffset() * 60)) / 1000;        \n        var time_lapse = current - last;\n        msg.last = last;\n        msg.current = current;\n        msg.time_lapse = (parseFloat(time_lapse/60).toPrecision(3));\n        status = (msg.payload.online == true)? 'online': 'offline';\n    }\n}\nmsg.eui = msg.payload.eui;\nmsg.status = status;\nmsg.payload = \":::\" + status + \"::: \" + msg.time_lapse + \" min \"\n+ \"(rxRate \" + msg.payload.rxRate +\"; txRate \" + msg.payload.txRate + \")\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 220,
+        "wires": [
+            [
+                "f23632c5.91cac",
+                "b80c2446.9ebe98"
+            ]
+        ]
+    },
+    {
+        "id": "f23632c5.91cac",
+        "type": "rbe",
+        "z": "87158aa2.470b68",
+        "name": "has_changed",
+        "func": "rbei",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "status",
+        "topi": "id",
+        "x": 700,
+        "y": 320,
+        "wires": [
+            [
+                "614204d3.dff28c"
+            ]
+        ]
+    },
+    {
+        "id": "614204d3.dff28c",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "message template",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{owner}}: o status do gateway {{place}} [{{ id }}] ({{ eui }}) foi alterado para {{ payload }}.",
+        "output": "str",
+        "x": 950,
+        "y": 320,
+        "wires": [
+            [
+                "f5ac112b.5c6f2",
+                "328cad0a.8b7f82",
+                "ec83e7c46543b6ab"
+            ]
+        ]
+    },
+    {
+        "id": "9662f0b0.0c23",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Caxias - UBS São José",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eu-f8033202fdbb0000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "PMCS",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "CXS - UBS São José",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eu-f8033202fdbb0000",
+        "payloadType": "str",
+        "x": 210,
+        "y": 200,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "f5ac112b.5c6f2",
+        "type": "template",
+        "z": "87158aa2.470b68",
+        "name": "telegram payload",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{\n    \"chatId\": 1263314778,\n    \"type\": \"message\",\n    \"content\": \"{{payload}}\"\n}\n\n",
+        "output": "json",
+        "x": 690,
+        "y": 420,
+        "wires": [
+            [
+                "f1a53c358176981a"
+            ]
+        ]
+    },
+    {
+        "id": "328cad0a.8b7f82",
+        "type": "debug",
+        "z": "87158aa2.470b68",
         "name": "",
-        "broker": "oci-sambass.ddns.net",
-        "port": "21883",
-        "clientid": "",
-        "autoConnect": true,
-        "usetls": false,
-        "protocolVersion": "4",
-        "keepalive": "60",
-        "cleansession": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "birthMsg": {},
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "closeMsg": {},
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": "",
-        "willMsg": {},
-        "userProps": "",
-        "sessionExpiry": ""
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1190,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "edc4b93e.208918",
+        "type": "json",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 930,
+        "y": 220,
+        "wires": [
+            [
+                "5a4a30.9b5595d"
+            ]
+        ]
+    },
+    {
+        "id": "b80c2446.9ebe98",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1190,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "6c7c54eff2699529",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1210,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "c42a23a37bfcb05b",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "TESTE",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1200",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Olá ... está sendo realizado um teste manual para checar a aplicação. Por favor, desconsidere!",
+        "payloadType": "str",
+        "x": 660,
+        "y": 520,
+        "wires": [
+            [
+                "f5ac112b.5c6f2",
+                "ec83e7c46543b6ab"
+            ]
+        ]
+    },
+    {
+        "id": "6ed4f097297fc028",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1210,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "4dc08d5e4b814d75",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "30 min (Arredores)",
+        "info": "",
+        "x": 110,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "4c4d129168551306",
+        "type": "comment",
+        "z": "87158aa2.470b68",
+        "name": "10 min (Caxias do Sul)",
+        "info": "",
+        "x": 160,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "f1a53c358176981a",
+        "type": "telegram sender",
+        "z": "87158aa2.470b68",
+        "name": "Samuel Ferrigo",
+        "bot": "28188d6963536d17",
+        "haserroroutput": true,
+        "outputs": 2,
+        "x": 940,
+        "y": 420,
+        "wires": [
+            [
+                "6c7c54eff2699529"
+            ],
+            [
+                "6ed4f097297fc028"
+            ]
+        ]
+    },
+    {
+        "id": "8a28f821bfa4c5a9",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "SAMAE",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f7d20000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "SAMAE",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "CXS - SAMAE",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f7d20000",
+        "payloadType": "str",
+        "x": 160,
+        "y": 260,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "c09ce3dd4f44dd78",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "São Chico - Escola",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb80000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "São Chico",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "São Chico - Escola",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb80000",
+        "payloadType": "str",
+        "x": 200,
+        "y": 860,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "415859f780836c73",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Samuel",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-246f28fffe96ce30",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Samuel",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Teste",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-246f28fffe96ce30",
+        "payloadType": "str",
+        "x": 280,
+        "y": 960,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "10eb90a7714e6c48",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Bento CAdm",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb70000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Bento",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Bento CAdm",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb70000",
+        "payloadType": "str",
+        "x": 180,
+        "y": 320,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "ec83e7c46543b6ab",
+        "type": "node-red-contrib-whatsapp-cmb-send-message",
+        "z": "87158aa2.470b68",
+        "name": "Samuel",
+        "account": "466e8637e38cfdd6",
+        "text": "payload",
+        "inputtypemessage": "msg",
+        "rejectssl": false,
+        "x": 920,
+        "y": 500,
+        "wires": [
+            [
+                "5a9f352c82d1ef27"
+            ]
+        ]
+    },
+    {
+        "id": "5a9f352c82d1ef27",
+        "type": "debug",
+        "z": "87158aa2.470b68",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "fc0ad19fd84e71bd",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Bento - Igreja",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f95b0000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Bento",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Bento Igreja",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f95b0000",
+        "payloadType": "str",
+        "x": 180,
+        "y": 380,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "cbee8f08b114e5e3",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Gramado A",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f7e30000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Gramado",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Gramado A",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f7e30000",
+        "payloadType": "str",
+        "x": 170,
+        "y": 440,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "bd87256243d47da9",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Gramado B",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f7e00000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Gramado",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Gramado B",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f7e00000",
+        "payloadType": "str",
+        "x": 170,
+        "y": 500,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "fff2350d0aa944b1",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "São Chico - UAB",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f94c0000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "São Chico",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "São Chico - UAB",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f94c0000",
+        "payloadType": "str",
+        "x": 190,
+        "y": 800,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "712f6ab002ab5bef",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Canela DIndustrial",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb30000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Canela",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Canela DIndustrial",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb30000",
+        "payloadType": "str",
+        "x": 200,
+        "y": 620,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "ee7855dfb6842493",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Canela CIT",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdb40000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Canela",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Canela CIT",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdb40000",
+        "payloadType": "str",
+        "x": 170,
+        "y": 560,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "fd5cc69c0a39c4ac",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Flores - Escola",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202f7f40000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Flores",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Flores - Escola",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202f7f40000",
+        "payloadType": "str",
+        "x": 180,
+        "y": 740,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
+    },
+    {
+        "id": "0d842c2416c832ba",
+        "type": "inject",
+        "z": "87158aa2.470b68",
+        "name": "Flores - Vindima",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "eui-f8033202fdba0000",
+                "vt": "str"
+            },
+            {
+                "p": "owner",
+                "v": "Flores",
+                "vt": "str"
+            },
+            {
+                "p": "place",
+                "v": "Flores - Vindima",
+                "vt": "str"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "eui-f8033202fdba0000",
+        "payloadType": "str",
+        "x": 190,
+        "y": 680,
+        "wires": [
+            [
+                "90ae30e8.ce354"
+            ]
+        ]
     }
 ]
