@@ -3,10 +3,12 @@
 ## Comandos utilizados no OCI
 ### Para parar TTS:
 Em /var/lib/acme
+
 sudo docker-compose stop
 
 ### Firewall
 sudo iptables -F
+
 sudo iptables -p FORWARD ACCEPT
 
 ### EMQX
