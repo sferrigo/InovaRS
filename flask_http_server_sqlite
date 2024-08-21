@@ -1,10 +1,11 @@
 import pandas as pd
 import sqlite3
-from flask import Flask, json, request, render_template, Response
+from flask import Flask, json, request, render_template, Response, send_file, redirect
 from datetime import datetime
 import io
 import csv
-
+#import send_file
+ 
 api = Flask(__name__, template_folder='.')
 
 def get_db_connection():
@@ -25,22 +26,22 @@ def print_messages():
   #print(data2);
   #conn.execute('INSERT INTO dados (dados, data) VALUES (?,?)', ([request.data.decode('UTF-8')], data2));
   #conn.execute('INSERT INTO dados (dados) VALUES (?)', [request.data.decode('UTF-8')]);
-  if arquivo.find("{") != -1:
+  if arquivo.find("{") != -1 or arquivo.find("(") != -1:
     query_insert = """INSERT INTO dados (dados, data, device) VALUES (?,?,?)""";
     conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0]));
-  else:
+  else:  
     query_insert = """INSERT INTO dados (dados, data, device, contagem, temperatura, umidade, luminosidade, ruido, etvoc, eco2, latitude, longitude, unixtime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""";
     conn.execute(query_insert, (request.data.decode('UTF-8'), data2, divisao[0], divisao[1], divisao[2], divisao[3], divisao[4], divisao[5], divisao[6], divisao[7], divisao[8], divisao[9], divisao[10]));
   conn.commit();
   conn.close();
   return json.dumps(reply), 200
-  
+
 @api.route('/list')
 def list():
    conn = get_db_connection();
    cur = conn.cursor()
    cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 200")
-   rows = cur.fetchall();
+   rows = cur.fetchall(); 
    return render_template("list.html",rows = rows)
 
 @api.route('/list/download')
@@ -48,7 +49,7 @@ def download_report_list():
  try:
   conn = get_db_connection();
   cur = conn.cursor()
-  cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 30000")
+  cur.execute("SELECT * FROM dados ORDER BY id DESC LIMIT 40000")
   rows = cur.fetchall();
   output = io.StringIO()
   writer = csv.writer(output)
@@ -73,7 +74,7 @@ def download_report_list():
 def mayron():
    conn = get_db_connection();
    cur = conn.cursor()
-   cur.execute("SELECT * FROM dados WHERE dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%sirrosteste_UCS_AMV-03%'ORDER BY id DESC LIMIT 1000")
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%UCS_AMV-03%'ORDER BY id DESC LIMIT 500")
    rows = cur.fetchall();
    return render_template("list.html",rows = rows)
 
@@ -82,7 +83,45 @@ def download_report():
  try:
   conn = get_db_connection();
   cur = conn.cursor()
-  cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%sirrosteste_UCS_AMV-03%') AND dados NOT LIKE '%{%' ORDER BY id DESC")
+  cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-02%' OR dados LIKE '%sirrosteste_UCS_AMV-01%' OR dados LIKE '%UCS_AMV-03%') AND dados NOT LIKE '%{%' ORDER BY id DESC LIMIT 15000")
+  rows = cur.fetchall(); 
+  output = io.StringIO()
+  writer = csv.writer(output)
+   
+  line = ['id, data, device, contagem, temperatura, umidade, luminosidade, ruido, etvoc, eco2, latitude, longitude, unixtime, dados']
+  #line = ['dados, teste']
+  writer.writerow(line)
+ 
+  for row in rows:
+   line = [str(row['id']) + ',' + str(row['data']) + ',' + row['device'] + ',' + str(row['contagem']) + ',' + str(row['temperatura']) + ',' + str(row['umidade']) + ',' + str(row['luminosidade']) + ',' + str(row['ruido']) + ',' + str(row['etvoc']) + ',' + str(row['eco2']) + ',' + str(row['latitude']) + ',' + str(row['longitude']) + ',' + str(row['unixtime']) + ',' + str(row['dados'])]
+   #line = [str(row['dados']) + ',' + str(row['contagem'])]
+   writer.writerow(line)
+ 
+  output.seek(0)
+   
+  return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=dados_mayron.csv"})
+ except Exception as e:
+  print(e)
+ finally:
+  cur.close() 
+  conn.close()
+
+@api.route('/homolog')
+def inova():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-21%') AND dados NOT LIKE '%{%' ORDER BY id DESC LIMIT 500")
+   rows = cur.fetchall();
+   return render_template("list.html",rows = rows)
+
+@api.route('/homolog/download')
+def inova_report():
+ try:
+  conn = get_db_connection();
+  cur = conn.cursor()
+#  cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-11%' OR dados LIKE '%sirrosteste_UCS_AMV-13%' OR dados LIKE '%sirrosteste_UCS_AMV-20%' OR dados LIKE '%sirrosteste_UCS_AMV-23%') AND dados NOT LIKE '%{%' ORDER BY id DESC LIMIT 5000")
+  cur.execute("SELECT * FROM dados WHERE (dados LIKE '%sirrosteste_UCS_AMV-21%') ORDER BY id DESC LIMIT 50000")
+
   rows = cur.fetchall();
   output = io.StringIO()
   writer = csv.writer(output)
@@ -98,7 +137,7 @@ def download_report():
 
   output.seek(0)
 
-  return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=dados_mayron.csv"})
+  return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=dados_homolog.csv"})
  except Exception as e:
   print(e)
  finally:
@@ -123,40 +162,53 @@ def reset():
    print(rows)
    return render_template("list.html",rows = rows)
 
+@api.route('/caxias')
+def caxias():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/663d147a142d0d0009f5ddeb?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
 
-@api.route('/test')
-def test():
-   conn = get_db_connection();
-   cur = conn.cursor()
-   cur.execute("SELECT * FROM dados WHERE dados LIKE '%error%' ORDER BY device,id DESC LIMIT 2")
-   rows = cur.fetchall();
-   #print(rows)
-   for row in rows:
-    print("Laco")
-    print(row['dados'])
-    print( type(row['dados']))
-    divide = []
-    if row['dados'].find("|") != -1:
-        print("Entrei no if")
-        divide = row['dados'].split("|")
-        print ("Divide 0: " + divide[0])
-        #print (" ")
-        print ("Divide 1: " + divide[1])
-        print ("sai do if")
-    else:
-        print("entrei no else")
-        #divide[1] = divide[0]
-        #divide[0] = "Nada"
-        divide.append("Nada")
-        print ("Divide 0 else: " + divide[0])
-        print ("Divide 1 else: " + divide[1])
-        print ("sai do else ")
-    print(row)
-    print(divide)
-   rows = divide
-   conn.close()
-   return render_template("list2.html", rows = divide)
+@api.route('/bento')
+def bento():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/66281f58ce9b9c0010f8f851?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
 
+@api.route('/flores')
+def flores():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/662a858f30f98d0009fb825f?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
+
+@api.route('/saochico')
+def saochico():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/666ac4fa83ecfe00096f6e9a?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
+
+@api.route('/canela')
+def canela():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/667daffb22f0b00008ed81a8?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
+
+@api.route('/gramado')
+def gramado():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/66a151d1629b410009b8a39d?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
+
+
+@api.route('/ucs2')
+def ucs2():
+   return redirect("https://60ecd636ad82cf0011a34972.tago.run/dashboards/info/667c8bcf3ac0f300092adeea?anonymousToken=00000000-60ec-d636-ad82-cf0011a34972", code=302)
+
+
+@api.route('/heltec')
+def heltec():
+   return redirect("https://60ecd636ad82cf0011a34972.tago.run/dashboards/info/60ecd865d46da30012ffdb11?anonymousToken=00000000-60ec-d636-ad82-cf0011a34972", code=302)
+
+@api.route('/ucs')
+def ucs():
+   return redirect("https://62fe8849561c41001201ab8b.tago.run/dashboards/info/663d0cfb867da800090847de?anonymousToken=00000000-62fe-8849-561c-41001201ab8b", code=302)
+
+@api.route('/comparativo')
+def comparativo():
+   return redirect("https://62fe8849561c41001201ab8b.tago.run/dashboards/info/6601b14e19f0ed000e09890b?anonymousToken=00000000-62fe-8849-561c-41001201ab8b", code=302)
+
+
+@api.route('/download')
+def download_arquivo():
+    nome_do_arquivo = '/home/ubuntu/devices.csv'  # Substitua pelo caminho do seu arquivo
+    return send_file(nome_do_arquivo, as_attachment=True)
 
 if __name__ == '__main__':
   api.run(host = '0.0.0.0', port=5000)
