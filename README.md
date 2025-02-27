@@ -14,3 +14,5 @@ sudo iptables -p FORWARD ACCEPT
 ### EMQX
 sudo docker start 2ee536e116376db24be2501fa5a915751eb1c8f488864a830b92f12a4eb3468a
 
+### Inicialização servidor Web
+nohup python3 http_server_sqlite_2.py &
