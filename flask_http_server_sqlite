@@ -162,6 +162,52 @@ def reset():
    print(rows)
    return render_template("list.html",rows = rows)
 
+
+@api.route('/test')
+def test():
+   conn = get_db_connection();
+   cur = conn.cursor()
+   cur.execute("SELECT * FROM dados WHERE dados LIKE '%error%' ORDER BY device,id DESC LIMIT 2")
+   rows = cur.fetchall();
+   #print(rows)
+   for row in rows:
+    print("Laco")
+    print(row['dados'])
+    print( type(row['dados']))
+    divide = []
+    if row['dados'].find("|") != -1:
+        print("Entrei no if")
+        divide = row['dados'].split("|")
+        print ("Divide 0: " + divide[0])
+        #print (" ")
+        print ("Divide 1: " + divide[1])
+        print ("sai do if")
+    else:
+        print("entrei no else")
+        #divide[1] = divide[0]
+        #divide[0] = "Nada"
+        divide.append("Nada")
+        print ("Divide 0 else: " + divide[0])
+        print ("Divide 1 else: " + divide[1])
+        print ("sai do else ")
+    print(row)
+    print(divide)
+   rows = divide
+   conn.close()
+   return render_template("list2.html", rows = divide)
+
+#@api.route('/questionario-dissertacao')
+#def christian():
+#   return render_template("link_random.html")
+
+@api.route('/senzemo')
+def senzemo():
+   return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/67bfa621ef2ef6000accc5af?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
+
+@api.route('/inova')
+def inova_tago():
+   return redirect("https://641e0f53d7684b0009a04d97.tago.run/dashboards/info/645a3aadc10f930008639e06?anonymousToken=00000000-641e-0f53-d768-4b0009a04d97&dispositivo=6445db22452836000a5133eb", code=302)
+
 @api.route('/caxias')
 def caxias():
    return redirect("https://660e7d87eacf83000a7bdf6d.tago.run/dashboards/info/663d147a142d0d0009f5ddeb?anonymousToken=00000000-660e-7d87-eacf-83000a7bdf6d", code=302)
@@ -200,15 +246,63 @@ def heltec():
 def ucs():
    return redirect("https://62fe8849561c41001201ab8b.tago.run/dashboards/info/663d0cfb867da800090847de?anonymousToken=00000000-62fe-8849-561c-41001201ab8b", code=302)
 
-@api.route('/comparativo')
-def comparativo():
-   return redirect("https://62fe8849561c41001201ab8b.tago.run/dashboards/info/6601b14e19f0ed000e09890b?anonymousToken=00000000-62fe-8849-561c-41001201ab8b", code=302)
+#@api.route('/comparativo')
+#def comparativo():
+#   return redirect("https://62fe8849561c41001201ab8b.tago.run/dashboards/info/6601b14e19f0ed000e09890b?anonymousToken=00000000-62fe-8849-561c-41001201ab8b", code=302)
 
 
 @api.route('/download')
 def download_arquivo():
     nome_do_arquivo = '/home/ubuntu/devices.csv'  # Substitua pelo caminho do seu arquivo
     return send_file(nome_do_arquivo, as_attachment=True)
+
+@api.route('/download_bd')
+def download_bd():
+    nome_do_arquivo = '/home/ubuntu/ucs_amv_mqtt.db'  # Substitua pelo caminho do seu arquivo
+    return send_file(nome_do_arquivo, as_attachment=True)
+
+@api.route('/download_fonte')
+def download_fonte():
+    nome_do_arquivo = '/home/ubuntu/http_server_sqlite_2.py'  # Substitua pelo caminho do seu arquivo
+    return send_file(nome_do_arquivo, as_attachment=True)
+
+@api.route('/tago', methods=['POST'])
+def tago():
+  reply= {"result": "ok", "message": "success"}
+  print("got post request: ", request.data.decode('UTF-8'));
+  
+  arquivo = request.data.decode('UTF-8');
+  conn = get_db_connection();
+  data2 = str(datetime.now());
+  if arquivo.find("{") != -1 or arquivo.find("(") != -1:
+    query_insert = """INSERT INTO tago (dados, data) VALUES (?,?)""";
+    conn.execute(query_insert, (request.data.decode('UTF-8'), data2));
+  conn.commit();
+  conn.close();
+
+  return json.dumps(reply), 200
+
+@api.route('/tago/dados')
+def exibir_dados():
+    conn = get_db_connection()
+    dados = conn.execute("SELECT * FROM tago ORDER BY id DESC LIMIT 100").fetchall()
+    conn.close()
+
+    registros = []
+    for row in dados:
+        try:
+            json_data = json.loads(row["dados"])  # Converte a string JSON em dicionário
+            registros.append({
+                "id": row["id"],
+                "device_id": json_data.get("device_id", "N/A"),
+                "device_name": json_data.get("device_name", "N/A"),
+                "data": json_data.get("data", [])
+            })
+        except json.JSONDecodeError:
+            continue  # Ignora registros inválidos
+
+    return render_template("tabela.html", registros=registros)
+
 
 if __name__ == '__main__':
   api.run(host = '0.0.0.0', port=5000)
