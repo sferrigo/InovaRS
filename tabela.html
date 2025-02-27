@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados do TagoIO</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2>Dados do TagoIO</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Device ID</th>
+                <th>Device Name</th>
+                <th>Variáveis</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.id }}</td>
+                    <td>{{ registro.device_id }}</td>
+                    <td>{{ registro.device_name }}</td>
+                    <td>
+                        <ul>
+                            {% for item in registro.data %}
+                                <li><strong>{{ item.variable }}:</strong> {{ item.value }} ({{ item.time }})</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
